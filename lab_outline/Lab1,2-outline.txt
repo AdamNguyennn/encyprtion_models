@@ -1,0 +1,28 @@
+1. guide for vs code and compile cryptopp library
+- why vs code
+https://www.youtube.com/watch?v=bK882S9ESpo
+- setting vs code
+https://code.visualstudio.com/docs/languages/cpp
+- compile and include cryptopp in your cpp projects
+2. introduction to crytopp library
+- Input, output in cryptopp;
+- Work with vietnames;
+- DES, AES classes;
+- Work with large numbers;
+3. Modes of operation (block ciphers)
+https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
+- ECB
+- CBC
+- CBC ciphertext stealing (CTS)
+- CFB
+- OFB
+- counter mode (CTR)
+- XTS
+- GCM
+....
+4. Code AES, DES with different modes
+- only using standar C++ library
+- using cryptopp library
+5. Bonus Assignments
+ - coding with GUI;
+ - encrypt database (sql, nosql) with AES 
