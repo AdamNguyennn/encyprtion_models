@@ -26,16 +26,43 @@ int main(int argc, char* argv[])
     byte iv[AES::BLOCKSIZE];
     byte key[32], fkey[32];
     string plain;
-    int type_encrption, type_input;
+    int type_encrption, type_input, type_models;
+    string cipher, encoded, recovered;
+
+    // Switch case models
+    cout << "\nSelect type of your models: " << endl;
+    cout << "1.CBC " << endl;
+    cout << "2.CFB " << endl;
+    cout << "3.ECB " << endl;
+    cout << "4.OFB " << endl;
+    cout << "\nYour input: ";
+    cin >> type_models;
+
+    switch (type_models) {
+        case 1:
+            //  CBC model
+            cout << "Case 1: CBC model" << endl;
+            break;
+        case 2:
+            //  CFB model
+            cout << "Case 1: CFB model" << endl;
+            break;
+        case 3:
+            //  ECB model
+            cout << "Case 1: ECB model" << endl;
+            break;
+        case 4:
+            //  OFB model
+            cout << "Case 1: OFB model" << endl;
+            break;
+    };
+
 
     // Switch case encryption
-    cout << "Select type of input Secret Key and IV: " << endl;
+    cout << "\nSelect type of input Secret Key and IV: " << endl;
     cout << "1. Input Secret Key and IV randomly: " << endl;
     cout << "2. Input Secret Key and IV from screen: " << endl;
     cout << "3. Input Secret Key and IV from file (using file name): " << endl;
-    
-    
-
     cout << "\nYour input: ";
     cin >> type_encrption;
 
@@ -81,8 +108,6 @@ int main(int argc, char* argv[])
     cout << "\nSelect type of input ciphertext: " << endl;
     cout << "1. Input plain_text: " << endl;
     cout << "2. Input plain_text from file name: " << endl;
-    
-
     cout << "\nYour input: ";
     cin >> type_input;
 
@@ -106,30 +131,60 @@ int main(int argc, char* argv[])
             break;
     };
     
-
-
-    
-    string sha1_digest_result, cipher, encoded, recovered;
-
     //Print Data
     cout << "Plain text: " << plain << endl;
     cout << "Key: " << PrettyPrint(key, AES::DEFAULT_KEYLENGTH) << endl;
 	cout << "iv: " << PrettyPrint(iv, AES::BLOCKSIZE) << endl;
- 
-    //Encrypt
-    cipher = CBCMode_Encrypt(plain, key, sizeof(key), iv);
-    cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
-    
-    //Decrypt
-    recovered = CBCMode_Decrypt(cipher, key, sizeof(key), iv);
-    cout << "Recovered text: " << recovered << endl;
-    
-    //Write to file
-    
-    ofstream myfile;
-    myfile.open ("result.txt");
-    myfile << buffer;
-    myfile.close();
+
+
+        switch (type_models) {
+        case 1:
+            //  CBC model
+                //Encrypt
+                cipher = CBCMode_Encrypt(plain, key, sizeof(key), iv);
+                cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
+                
+                //Decrypt
+                recovered = CBCMode_Decrypt(cipher, key, sizeof(key), iv);
+                cout << "Recovered text: " << recovered << endl;
+            break;
+        case 2:
+            //  CFB model
+            //Encrypt
+            cipher = ECBMode_Encrypt(plain, key, sizeof(key), iv);
+            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
+            
+            //Decrypt
+            recovered = ECBMode_Decrypt(cipher, key, sizeof(key), iv);
+            cout << "Recovered text: " << recovered << endl;
+            break;
+        case 3:
+            //  ECB model
+            //Encrypt
+            cipher = ECBMode_Encrypt(plain, key, sizeof(key), iv);
+            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
+            
+            //Decrypt
+            recovered = ECBMode_Decrypt(cipher, key, sizeof(key), iv);
+            cout << "Recovered text: " << recovered << endl;
+            break;
+        case 4:
+            //  OFB model
+            //Encrypt
+            cipher = OFBMode_Encrypt(plain, key, sizeof(key), iv);
+            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
+            //Decrypt
+            recovered = OFBMode_Decrypt(cipher, key, sizeof(key), iv);
+            cout << "Recovered text: " << recovered << endl;
+            break;
+    };
+
+    // //Write to file
+    WriteToFileFormat(plain, cipher, recovered, key, iv)
+    // ofstream myfile;
+    // myfile.open ("result.txt");
+    // myfile << "DCM";
+    // myfile.close();
     return 0;
 }
 

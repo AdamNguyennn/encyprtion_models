@@ -211,35 +211,48 @@ string ECBMode_Decrypt(string cipher, byte key[], int keySize) {
 }
 
 //**************************OFB mode processing*************************
-// string OFBMode_Encrypt(string text, byte key[], int keySize, byte iv[]) {
-//     string cipher = "";
-//     //Encryption
-//     try
-//     {
-//         OFB_Mode<AES>::Encryption e;
-//         e.SetKeyWithIV(key, keySize, iv);
-//         StringSource(text, true, new StreamTransformationFilter(e, new StringSink(cipher))); // StringSource
-//     }
-//     catch(const CryptoPP::Exception& e)
-//     {
-//         cerr << e.what() << endl;
-//         exit(1);
-//     }
-//     return cipher;
-// }
-// string OFBMode_Decrypt(string cipher, byte key[], int keySize, byte iv[]) {
-//     string recovered = "";
-//     //Decryption
-//     try
-//     {
-//         OFB_Mode< AES >::Decryption d;
-//         d.SetKeyWithIV(key, keySize, iv);
-//         StringSource s(cipher, true, new StreamTransformationFilter(d,new StringSink(recovered))); // StringSource
-//     }
-//     catch(const CryptoPP::Exception& e)
-//     {
-//         cerr << e.what() << endl;
-//         exit(1);
-//     }
-//     return recovered;
-// }
+string OFBMode_Encrypt(string text, byte key[], int keySize, byte iv[]) {
+    string cipher = "";
+    //Encryption
+    try
+    {
+        OFB_Mode<AES>::Encryption e;
+        e.SetKeyWithIV(key, keySize, iv);
+        StringSource(text, true, new StreamTransformationFilter(e, new StringSink(cipher))); // StringSource
+    }
+    catch(const CryptoPP::Exception& e)
+    {
+        cerr << e.what() << endl;
+        exit(1);
+    }
+    return cipher;
+}
+string OFBMode_Decrypt(string cipher, byte key[], int keySize, byte iv[]) {
+    string recovered = "";
+    //Decryption
+    try
+    {
+        OFB_Mode< AES >::Decryption d;
+        d.SetKeyWithIV(key, keySize, iv);
+        StringSource s(cipher, true, new StreamTransformationFilter(d,new StringSink(recovered))); // StringSource
+    }
+    catch(const CryptoPP::Exception& e)
+    {
+        cerr << e.what() << endl;
+        exit(1);
+    }
+    return recovered;
+}
+
+//**************************File format*************************
+string WriteToFileFormat(string text, string cipher, string recovered, string key, string iv) {
+    string file_format;
+    
+    file_format.append("Plain text: ", text);
+    file_format.append("Key: ", cipher);
+    file_format.append("iv: ", recovered);
+    file_format.append("Cipher Text: ", key);
+    file_format.append("Recovered text: ", iv);
+
+    return file_format;
+}
