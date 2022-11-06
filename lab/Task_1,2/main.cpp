@@ -56,13 +56,18 @@ int main(int argc, char* argv[])
             cin >> key;
             break;
         case 3:
-            char key_file;
+            string key_file_name;
             cout << "Case 3: Get Key from file name" << endl;
             cout << "Insert your key file name: ";
-            cin >> key_file;
+            cin >> key_file_name;
+            
+            // convert string to char
+            int n = key_file_name.length();
+            char key_file[n + 1];
+            strcpy(key_file, key_file_name.c_str());
 
             /* Reading key from file*/
-            FileSource fs("AES_key.key", false);
+            FileSource fs(key_file, false);
             /*Create space  for key*/ 
             CryptoPP::ArraySink copykey(key, sizeof(key));
             /*Copy data from AES_key.key  to  key */
@@ -73,7 +78,7 @@ int main(int argc, char* argv[])
     };
 
     // Switch case input
-    cout << "Select type of input Secret Key and IV: " << endl;
+    cout << "\nSelect type of input ciphertext: " << endl;
     cout << "1. Input plain_text: " << endl;
     cout << "2. Input plain_text from file name: " << endl;
     
@@ -101,17 +106,7 @@ int main(int argc, char* argv[])
             break;
     };
     
-    // string plain;
-    // cout << "Insert plain text: ";
-    // // cin >> plain;
-    // getline(cin, plain);
 
-    // write to file
-//     ofstream myfile;
-//   myfile.open ("example.txt");
-//   myfile << "Writing this to a file.\n";
-//   myfile.close();
-//   return 0;
 
     
     string sha1_digest_result, cipher, encoded, recovered;
@@ -128,8 +123,14 @@ int main(int argc, char* argv[])
     //Decrypt
     recovered = CBCMode_Decrypt(cipher, key, sizeof(key), iv);
     cout << "Recovered text: " << recovered << endl;
- 
-	return 0;
+    
+    //Write to file
+    
+    ofstream myfile;
+    myfile.open ("result.txt");
+    myfile << buffer;
+    myfile.close();
+    return 0;
 }
 
 
