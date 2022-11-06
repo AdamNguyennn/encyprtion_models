@@ -16,6 +16,7 @@ using CryptoPP::FileSource;
 #include <iostream>
 #include <fstream>
 #include <streambuf>
+
 #include "functions.h"
 using namespace std;
 
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
     byte key[32], fkey[32];
     string plain;
     int type_encrption, type_input, type_models;
-    string cipher, encoded, recovered;
+    string cipher, encoded, recovered, result;
 
     // Switch case models
     cout << "\nSelect type of your models: " << endl;
@@ -151,21 +152,21 @@ int main(int argc, char* argv[])
         case 2:
             //  CFB model
             //Encrypt
-            cipher = ECBMode_Encrypt(plain, key, sizeof(key), iv);
+            cipher = CFBMode_Encrypt(plain, key, sizeof(key), iv);
             cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
             
             //Decrypt
-            recovered = ECBMode_Decrypt(cipher, key, sizeof(key), iv);
+            recovered = CFBMode_Decrypt(cipher, key, sizeof(key), iv);
             cout << "Recovered text: " << recovered << endl;
             break;
         case 3:
             //  ECB model
             //Encrypt
-            cipher = ECBMode_Encrypt(plain, key, sizeof(key), iv);
+            cipher = ECBMode_Encrypt(plain, key, sizeof(key));
             cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
             
             //Decrypt
-            recovered = ECBMode_Decrypt(cipher, key, sizeof(key), iv);
+            recovered = ECBMode_Decrypt(cipher, key, sizeof(key));
             cout << "Recovered text: " << recovered << endl;
             break;
         case 4:
@@ -180,11 +181,13 @@ int main(int argc, char* argv[])
     };
 
     // //Write to file
-    WriteToFileFormat(plain, cipher, recovered, key, iv)
-    // ofstream myfile;
-    // myfile.open ("result.txt");
-    // myfile << "DCM";
-    // myfile.close();
+    
+    result = WriteToFileFormat(plain, PrettyPrint(cipher), recovered, PrettyPrint(key, sizeof(key)), PrettyPrint(iv, sizeof(iv)));
+
+    ofstream myfile;
+    myfile.open ("result.txt");
+    myfile << result;
+    myfile.close();
     return 0;
 }
 

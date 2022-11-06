@@ -23,5 +23,5 @@ std::string ECBMode_Decrypt(std::string text, byte key[], int keySize);
 std::string OFBMode_Encrypt(std::string text, byte key[], int keySize);
 std::string OFBMode_Decrypt(std::string text, byte key[], int keySize);
 // Format file
-std::string WriteToFileFormat(string text, string cipher, string recovered, string key, string iv);
+std::string WriteToFileFormat(std::string text, std::string cipher, std::string recovered, std::string key, std::string iv);
 #endif

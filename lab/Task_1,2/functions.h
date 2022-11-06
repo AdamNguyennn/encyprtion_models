@@ -248,11 +248,17 @@ string OFBMode_Decrypt(string cipher, byte key[], int keySize, byte iv[]) {
 string WriteToFileFormat(string text, string cipher, string recovered, string key, string iv) {
     string file_format;
     
-    file_format.append("Plain text: ", text);
-    file_format.append("Key: ", cipher);
-    file_format.append("iv: ", recovered);
-    file_format.append("Cipher Text: ", key);
-    file_format.append("Recovered text: ", iv);
+    file_format.append("Plain text: ");
+    file_format.append(text);
+    file_format.append("\nKey: ");
+    file_format.append(key);
+    file_format.append("\niv: ");
+    file_format.append(iv);
+    file_format.append("\nCipher Text: ");
+    file_format.append(cipher);
+    file_format.append("\nRecovered text: ");
+    file_format.append(recovered);
+
 
     return file_format;
 }
