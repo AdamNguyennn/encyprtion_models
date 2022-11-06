@@ -36,25 +36,30 @@ int main(int argc, char* argv[])
     cout << "2.CFB " << endl;
     cout << "3.ECB " << endl;
     cout << "4.OFB " << endl;
-    cout << "\nYour input: ";
+    cout << "**********************************" << endl;
+    cout << "Your input: ";
     cin >> type_models;
 
     switch (type_models) {
         case 1:
             //  CBC model
             cout << "Case 1: CBC model" << endl;
+            cout << "**********************************" << endl;
             break;
         case 2:
             //  CFB model
             cout << "Case 1: CFB model" << endl;
+            cout << "**********************************" << endl;
             break;
         case 3:
             //  ECB model
             cout << "Case 1: ECB model" << endl;
+            cout << "**********************************" << endl;
             break;
         case 4:
             //  OFB model
             cout << "Case 1: OFB model" << endl;
+            cout << "**********************************" << endl;
             break;
     };
 
@@ -64,13 +69,15 @@ int main(int argc, char* argv[])
     cout << "1. Input Secret Key and IV randomly: " << endl;
     cout << "2. Input Secret Key and IV from screen: " << endl;
     cout << "3. Input Secret Key and IV from file (using file name): " << endl;
-    cout << "\nYour input: ";
+    cout << "**********************************" << endl;
+    cout << "Your input: ";
     cin >> type_encrption;
 
     switch (type_encrption) {
         case 1:
             //  Key, IV randomly
             cout << "Case 1: Create Key, IV randomly" << endl;
+            cout << "**********************************" << endl;
             // Create random iv
             prng.GenerateBlock(iv, sizeof(iv));
             // Create random key
@@ -80,6 +87,7 @@ int main(int argc, char* argv[])
             // Input Key, IV
             //Define the key and iv
             cout << "Case 2: Insert Key, IV" << endl;
+            cout << "**********************************" << endl;
             cin >> iv;
             cin >> key;
             break;
@@ -88,6 +96,8 @@ int main(int argc, char* argv[])
             cout << "Case 3: Get Key from file name" << endl;
             cout << "Insert your key file name: ";
             cin >> key_file_name;
+            cout << "Your file name: " << key_file_name << endl;
+            cout << "**********************************" << endl;
             
             // convert string to char
             int n = key_file_name.length();
@@ -105,11 +115,12 @@ int main(int argc, char* argv[])
             break;
     };
 
-    // Switch case input
+    // Switch case input plain text -> ciphertext
     cout << "\nSelect type of input ciphertext: " << endl;
     cout << "1. Input plain_text: " << endl;
     cout << "2. Input plain_text from file name: " << endl;
-    cout << "\nYour input: ";
+    cout << "**********************************" << endl;
+    cout << "Your input: ";
     cin >> type_input;
 
     switch (type_input) {
@@ -117,12 +128,15 @@ int main(int argc, char* argv[])
             cout << "Case 1: Input plain_text" << endl;
             cout << "Input plain text: ";
             cin >> plain;
+            cout << "**********************************" << endl;
             break;
         case 2:
             string file_name;
             cout << "Case 2: Input plain_text from file name" << endl;
             cout << "Input plain text: ";
             cin >> file_name;
+            cout << "Your file name: " << file_name << endl;
+            cout << "**********************************" << endl;
             
             ifstream MyReadFile(file_name);
             // read one line only
@@ -132,58 +146,47 @@ int main(int argc, char* argv[])
             break;
     };
     
-    //Print Data
-    cout << "Plain text: " << plain << endl;
-    cout << "Key: " << PrettyPrint(key, AES::DEFAULT_KEYLENGTH) << endl;
-	cout << "iv: " << PrettyPrint(iv, AES::BLOCKSIZE) << endl;
-
-
-        switch (type_models) {
+    // Encryption, Deceryption processions
+    switch (type_models) {
         case 1:
             //  CBC model
-                //Encrypt
-                cipher = CBCMode_Encrypt(plain, key, sizeof(key), iv);
-                cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
-                
-                //Decrypt
-                recovered = CBCMode_Decrypt(cipher, key, sizeof(key), iv);
-                cout << "Recovered text: " << recovered << endl;
+            //Encrypt
+            cipher = CBCMode_Encrypt(plain, key, sizeof(key), iv);
+            //Decrypt
+            recovered = CBCMode_Decrypt(cipher, key, sizeof(key), iv);
+
             break;
         case 2:
             //  CFB model
             //Encrypt
             cipher = CFBMode_Encrypt(plain, key, sizeof(key), iv);
-            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
-            
             //Decrypt
             recovered = CFBMode_Decrypt(cipher, key, sizeof(key), iv);
-            cout << "Recovered text: " << recovered << endl;
+
             break;
         case 3:
             //  ECB model
             //Encrypt
             cipher = ECBMode_Encrypt(plain, key, sizeof(key));
-            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
-            
             //Decrypt
             recovered = ECBMode_Decrypt(cipher, key, sizeof(key));
-            cout << "Recovered text: " << recovered << endl;
+            
             break;
         case 4:
             //  OFB model
             //Encrypt
             cipher = OFBMode_Encrypt(plain, key, sizeof(key), iv);
-            cout << "Cipher Text: " << PrettyPrint(cipher) << endl;
             //Decrypt
             recovered = OFBMode_Decrypt(cipher, key, sizeof(key), iv);
-            cout << "Recovered text: " << recovered << endl;
+            
             break;
     };
 
-    // //Write to file
-    
+    // Print to screen & Write to file
     result = WriteToFileFormat(plain, PrettyPrint(cipher), recovered, PrettyPrint(key, sizeof(key)), PrettyPrint(iv, sizeof(iv)));
-
+    cout << "\n\n\t***************RESULT****************" << endl;
+    cout << result << endl;
+    cout << "\n\n\t*************************************" << endl;
     ofstream myfile;
     myfile.open ("result.txt");
     myfile << result;
