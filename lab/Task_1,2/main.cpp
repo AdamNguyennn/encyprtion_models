@@ -10,8 +10,13 @@ using CryptoPP::Redirector;
 #include <cryptopp/files.h>
 using CryptoPP::FileSink;
 
-#include "functions.h"
+#include <cryptopp/files.h>
+using CryptoPP::FileSource;
 
+#include <iostream>
+#include <fstream>
+#include <streambuf>
+#include "functions.h"
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -20,7 +25,8 @@ int main(int argc, char* argv[])
     //Define the key and iv
     byte iv[AES::BLOCKSIZE];
     byte key[32], fkey[32];
-    int type_encrption;
+    string plain;
+    int type_encrption, type_input;
 
     // Switch case encryption
     cout << "Select type of input Secret Key and IV: " << endl;
@@ -50,29 +56,63 @@ int main(int argc, char* argv[])
             cin >> key;
             break;
         case 3:
+            char key_file;
             cout << "Case 3: Get Key from file name" << endl;
+            cout << "Insert your key file name: ";
+            cin >> key_file;
+
             /* Reading key from file*/
-            // FileSource fs("AES_key.key", false);
+            FileSource fs("AES_key.key", false);
             /*Create space  for key*/ 
-            // CryptoPP::ArraySink copykey(key, sizeof(key));
-            /*Copy data from AES_key.key  to  key */ 
-            // fs.Detach(new Redirector(copykey));
-            // fs.Pump(sizeof(key));  // Pump first 32 bytes
+            CryptoPP::ArraySink copykey(key, sizeof(key));
+            /*Copy data from AES_key.key  to  key */
+            fs.Detach(new Redirector(copykey));
+            // cout << infile <<endl;
+            fs.Pump(sizeof(key));  // Pump first 32 bytes
             break;
-        default:
-            cout << "Nothing" << endl;
-            break;
-            // Go to CBC
     };
 
+    // Switch case input
+    cout << "Select type of input Secret Key and IV: " << endl;
+    cout << "1. Input plain_text: " << endl;
+    cout << "2. Input plain_text from file name: " << endl;
+    
+
+    cout << "\nYour input: ";
+    cin >> type_input;
+
+    switch (type_input) {
+        case 1:
+            cout << "Case 1: Input plain_text" << endl;
+            cout << "Input plain text: ";
+            cin >> plain;
+            break;
+        case 2:
+            string file_name;
+            cout << "Case 2: Input plain_text from file name" << endl;
+            cout << "Input plain text: ";
+            cin >> file_name;
+            
+            ifstream MyReadFile(file_name);
+            // read one line only
+            getline (MyReadFile, plain);
+
+            cout << plain << endl;
+            break;
+    };
     
     // string plain;
     // cout << "Insert plain text: ";
     // // cin >> plain;
     // getline(cin, plain);
 
-    string plain;
-    plain = "Nam Anh";
+    // write to file
+//     ofstream myfile;
+//   myfile.open ("example.txt");
+//   myfile << "Writing this to a file.\n";
+//   myfile.close();
+//   return 0;
+
     
     string sha1_digest_result, cipher, encoded, recovered;
 

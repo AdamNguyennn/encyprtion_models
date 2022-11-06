@@ -1,9 +1,6 @@
 #include "cryptopp/aes.h"
 using CryptoPP::AES;
 
-#include "cryptopp/modes.h"
-using CryptoPP::CBC_Mode;
-
 #include "cryptopp/filters.h"
 using CryptoPP::Redirector;
 
@@ -15,45 +12,6 @@ using CryptoPP::AutoSeededRandomPool;
 
 #include "functions.h"
 using namespace std;
-
-string CBCMode_Encrypt(string text, byte key[], int keySize, byte iv[]) {
-    string cipher = "";
-    //Encryption
-    try
-    {
-        CBC_Mode<AES>::Encryption e;
-        e.SetKeyWithIV(key, keySize, iv);
-        // The StreamTransformationFilter adds padding
-        //  as required. ECB and CBC Mode must be padded
-        //  to the block size of the cipher.
-        StringSource(text, true, new StreamTransformationFilter(e, new StringSink(cipher))); // StringSource
-    }
-    catch(const CryptoPP::Exception& e)
-    {
-        cerr << e.what() << endl;
-        exit(1);
-    }
-    return cipher;
-}
-string CBCMode_Decrypt(string cipher, byte key[], int keySize, byte iv[]) {
-    string recovered = "";
-    //Decryption
-    try
-    {
-        CBC_Mode< AES >::Decryption d;
-        d.SetKeyWithIV(key, keySize, iv);
-        // The StreamTransformationFilter removes
-        //  padding as required.
-        StringSource s(cipher, true, new StreamTransformationFilter(d,new StringSink(recovered))); // StringSource
-    }
-    catch(const CryptoPP::Exception& e)
-    {
-        cerr << e.what() << endl;
-        exit(1);
-    }
-    return recovered;
-}
-
 
 int main(int argc, char* argv[])
 {
