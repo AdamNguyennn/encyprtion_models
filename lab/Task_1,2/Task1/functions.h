@@ -49,12 +49,13 @@ using CryptoPP::AutoSeededRandomPool;
 using CryptoPP::FileSource;
 // using CryptoPP::FileSink;
 
-// all modes: ECB, CBC, OFB, CFB, CTR, XTS, CCM, GCM.
+// all modes: ECB, CBC, OFB, CFB, CTR
 #include "cryptopp/modes.h"
 using CryptoPP::CBC_Mode;
 using CryptoPP::CFB_Mode;
 using CryptoPP::ECB_Mode;
 using CryptoPP::OFB_Mode;
+using CryptoPP::CTR_Mode;
 
 string sha1_digest(std::string text){
     string encoded;
@@ -259,6 +260,39 @@ string WriteToFileFormat(string text, string cipher, string recovered, string ke
     file_format.append("\nRecovered text: ");
     file_format.append(recovered);
 
-
     return file_format;
+}
+
+//**************************CTR mode processing*************************
+string CTRMode_Encrypt(string text, byte key[], int keySize, byte iv[]) {
+    string cipher = "";
+    //Encryption
+    try
+    {
+        OFB_Mode<AES>::Encryption e;
+        e.SetKeyWithIV(key, keySize, iv);
+        StringSource(text, true, new StreamTransformationFilter(e, new StringSink(cipher))); // StringSource
+    }
+    catch(const CryptoPP::Exception& e)
+    {
+        cerr << e.what() << endl;
+        exit(1);
+    }
+    return cipher;
+}
+string CTRMode_Decrypt(string cipher, byte key[], int keySize, byte iv[]) {
+    string recovered = "";
+    //Decryption
+    try
+    {
+        CTR_Mode< AES >::Decryption d;
+        d.SetKeyWithIV(key, keySize, iv);
+        StringSource s(cipher, true, new StreamTransformationFilter(d,new StringSink(recovered))); // StringSource
+    }
+    catch(const CryptoPP::Exception& e)
+    {
+        cerr << e.what() << endl;
+        exit(1);
+    }
+    return recovered;
 }

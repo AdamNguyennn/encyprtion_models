@@ -15,10 +15,26 @@ using CryptoPP::FileSource;
 
 #include <iostream>
 #include <fstream>
-#include <streambuf>
+#include <locale>
+#include <codecvt>
+// #include <streambuf>
 
 #include "functions.h"
 using namespace std;
+
+#include <bits/stdc++.h>
+ 
+// converts character array
+// to string and returns it
+string convertToString(char* a, int size)
+{
+    int i;
+    string s = "";
+    for (i = 0; i < size; i++) {
+        s = s + a[i];
+    }
+    return s;
+}
 
 int main(int argc, char* argv[])
 {
@@ -26,9 +42,9 @@ int main(int argc, char* argv[])
     //Define the key and iv
     byte iv[AES::BLOCKSIZE];
     byte key[32], fkey[32];
-    string plain;
     int type_encrption, type_input, type_models;
-    string cipher, encoded, recovered, result;
+    string cipher, encoded, recovered, result, plain;
+
 
     // Switch case models
     cout << "\nSelect type of your models: " << endl;
@@ -36,6 +52,7 @@ int main(int argc, char* argv[])
     cout << "2.CFB " << endl;
     cout << "3.ECB " << endl;
     cout << "4.OFB " << endl;
+    cout << "5.CTR " << endl;
     cout << "**********************************" << endl;
     cout << "Your input: ";
     cin >> type_models;
@@ -48,19 +65,24 @@ int main(int argc, char* argv[])
             break;
         case 2:
             //  CFB model
-            cout << "Case 1: CFB model" << endl;
+            cout << "Case 2: CFB model" << endl;
             cout << "**********************************" << endl;
             break;
         case 3:
             //  ECB model
-            cout << "Case 1: ECB model" << endl;
+            cout << "Case 3: ECB model" << endl;
             cout << "**********************************" << endl;
             break;
         case 4:
             //  OFB model
-            cout << "Case 1: OFB model" << endl;
+            cout << "Case 4: OFB model" << endl;
             cout << "**********************************" << endl;
             break;
+        case 5:
+            //  CTR model
+            cout << "Case 5: CTR model" << endl;
+            cout << "**********************************" << endl;
+        break;
     };
 
 
@@ -127,7 +149,9 @@ int main(int argc, char* argv[])
         case 1:
             cout << "Case 1: Input plain_text" << endl;
             cout << "Input plain text: ";
-            cin >> plain;
+            cin.ignore();
+            getline(cin, plain);
+
             cout << "**********************************" << endl;
             break;
         case 2:
@@ -180,6 +204,14 @@ int main(int argc, char* argv[])
             recovered = OFBMode_Decrypt(cipher, key, sizeof(key), iv);
             
             break;
+        case 5:
+            //  CTR model
+            //Encrypt
+            cipher = CTRMode_Encrypt(plain, key, sizeof(key), iv);
+            //Decrypt
+            recovered = CTRMode_Decrypt(cipher, key, sizeof(key), iv);
+            
+            break;
     };
 
     // Print to screen & Write to file
@@ -195,4 +227,8 @@ int main(int argc, char* argv[])
 }
 
 
-
+string wstring_to_string (const std::wstring& str)
+{
+    wstring_convert<codecvt_utf8<wchar_t> > tostring;
+    return tostring.to_bytes(str);
+}
