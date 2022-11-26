@@ -1,0 +1,22 @@
+Format (structure for saving more than one parameters): 
+Encode using ASN.1 ( X.509 for publickey  and PKCS #8 for PrivateKey)
+https://www.cryptopp.com/wiki/Keys_and_Formats
+
+1. Distinguished Encoding Rules (DER): binary form
+- save: DER encoding (binary)- write strictly;
+- load using Basic Encoding Rules (BER): easy to get parameters;
+https://www.cryptopp.com/w/images/4/4f/Cryptopp-key-gen.zip
+https://www.cryptopp.com/w/images/f/f7/Cryptopp-key-encode.zip
+
+2. Privacy-Enhanced Mail (PEM): text form (base64) 
+extension: .pem, .cer or .crt
+
+-----BEGIN PRIVATE KEY-----
+......
+-----END PRIVATE KEY-----
+
+For RSA
+// PKCS8PrivateKey
+RSA::PrivateKey;
+// X509PublicKey
+RSA::PublicKey;

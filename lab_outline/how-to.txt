@@ -1,6 +1,7 @@
 Execute the following to compile each .cpp file. 
 
 g++ [filename.cpp] -o result -l cryptopp
+g++ something.cpp -o result -lcryptopp -lpthread -L.
 
 Then 
 
