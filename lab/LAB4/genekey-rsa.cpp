@@ -109,32 +109,6 @@ int main()
 	#endif
 
     AutoSeededRandomPool rng;
-    // RSA::PrivateKey rsaPrivate;
-    // RSA::PublicKey rsaPublic;
-    // Integer q,p,n,e,d,phi;
-    // InvertibleRSAFunction rsa;
-    
-    // PrimeAndGenerator pg,pgg;
-    // pg.Generate(-1, prng, 1024, 1023);   
-    // p = pg.Prime();
-    // q = pg.SubPrime();
-    // n = p*q;
-    // phi = (p-1)*(q-1);
-    // pg.Generate(-1, prng, 3072, 3071);
-    // e = pg.Prime();
-    // ModularArithmetic ma(phi);
-    // d = ma.Divide(1, e);
-    // rsaPrivate.Initialize(n, e, d);
-    // rsaPublic.Initialize(n, e);
-    // rsa.SetModulus(n);
-    // rsa.SetPrivateExponent(d);
-    // rsa.SetPrime1(p);
-    // rsa.SetPrime2(q);
-    // // add this:
-    // rsa.SetModPrime1PrivateExponent( d % (p-1) );
-    // rsa.SetModPrime2PrivateExponent( d % (q-1) );
-    // rsa.SetMultiplicativeInverseOfPrime2ModPrime1( q.InverseMod(p) );
-    // rsa.SetPublicExponent( d.InverseMod((p-1) * (q-1)) );
     InvertibleRSAFunction params;
     params.GenerateRandomWithKeySize(rng, 3072);
 

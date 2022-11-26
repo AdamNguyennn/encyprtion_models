@@ -1,7 +1,7 @@
 Task 3: RSA Cipher (Encryption/Decryption) using CryptoPP
 Required:
 +) Separation Encryption function and Decryption function (using switch case)
-+) Plaintext:
++) Plaintext: (oke)
     - Support Vietnamese (UTF-16)
     - Input from screen or from file (using switch case)
 +) Cyphertext:

@@ -23,7 +23,7 @@ using CryptoPP::ModularArithmetic;
 
 #include "cryptopp/osrng.h"
 using CryptoPP::AutoSeededRandomPool;
-using CryptoPP::byte;
+// using CryptoPP::byte;
 
 #include "cryptopp/filters.h"
 using CryptoPP::StringSink;
@@ -245,7 +245,7 @@ string GetInput(int is)
         wcin.ignore();
         input = wstring_to_string(winput);
         return input;
-    }break;
+    }
     
     default:
     {
@@ -254,7 +254,7 @@ string GetInput(int is)
         string filename = wstring_to_string(winput);
         FileSource file(filename.c_str(), true, new StringSink(input));
         return input;
-    }break;
+    }
     }
 }
 
