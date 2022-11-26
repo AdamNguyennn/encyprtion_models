@@ -183,6 +183,7 @@ bool SignMessage( const ECDSA<ECP, SHA256>::PrivateKey& key, const string& messa
     
     signature.erase();    
 
+    
     StringSource( message, true,
         new SignerFilter( prng,
             ECDSA<ECP,SHA256>::Signer(key),
@@ -195,14 +196,20 @@ bool SignMessage( const ECDSA<ECP, SHA256>::PrivateKey& key, const string& messa
 
 bool VerifyMessage( const ECDSA<ECP, SHA256>::PublicKey& key, const string& message, const string& signature )
 {
-    bool result = false;
-
-    // StringSource( signature+message, true,
-    //     new SignatureVerificationFilter(
-    //         ECDSA<ECP,SHA256>::Verifier(key),
-    //         new ArraySink( CryptoPP::byte* &result, sizeof(result) )
-    //     ) // SignatureVerificationFilter
-    // );
-    StringSource( signature+message, true);
-    return result;
+    bool result = true;
+   try
+    {
+        StringSource(message + signature, true,
+            new SignatureVerificationFilter(
+            ECDSA<ECP, SHA256>::Verifier(key), NULL,
+            SignatureVerificationFilter::THROW_EXCEPTION
+            ) // SignatureVerificationFilter   
+            ); // StringSource
+            return true;
+    }
+    catch (CryptoPP::Exception& e)
+    {   
+        std::cerr << "\n\nERROR: " << e.what() << std::endl;
+        return false;
+    }
 }

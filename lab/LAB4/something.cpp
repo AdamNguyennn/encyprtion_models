@@ -1,28 +1,32 @@
 #include<iostream>
+using namespace std;
 using std::wcin;
 using std::wcout;
 using std::cerr;
 using std::endl;
-
-/* Set location */ 
+#include <string>
+using std::string;
+using std::wstring;
 #include <locale>
 using std::wstring_convert;
 #include <codecvt>
 using std::codecvt_utf8;
+#include <assert.h>
 
-/* Set _setmode()*/ 
-#ifdef _WIN32
-#include <io.h>
-#include <fcntl.h>
-#else
-#endif
+/* Filters */
+#include "cryptopp/filters.h"
+using CryptoPP::StringSource;
+using CryptoPP::StringSink;
+using CryptoPP::ArraySink;
+using CryptoPP::SignerFilter;
+using CryptoPP::SignatureVerificationFilter;
+// using CryptoPP::byte;
 
+/* File */
+#include "cryptopp/files.h"
+using CryptoPP::FileSource;
+using CryptoPP::FileSink;
 
-#include <string>
-using std::string;
-using std::wstring;
-
-#include <sstream>
 
 #include "cryptopp/integer.h"
 using CryptoPP::Integer;
@@ -36,157 +40,210 @@ using CryptoPP::ModularArithmetic;
 
 #include "cryptopp/osrng.h"
 using CryptoPP::AutoSeededRandomPool;
-using CryptoPP::byte;
 
-#include "cryptopp/filters.h"
-using CryptoPP::StringSink;
-using CryptoPP::StringSource;
-using CryptoPP::StreamTransformationFilter;
-using CryptoPP::Redirector; // string to bytes
 
-#include "cryptopp/hex.h"
-using CryptoPP::HexEncoder;
-using CryptoPP::HexDecoder;
+#include "cryptopp/sha.h"
+using CryptoPP::SHA256;
 
-//Function definition
-/* convert string to wstring */
-wstring string_to_wstring (const std::string& str);
 
-/* convert wstring to string */
-string wstring_to_string (const std::wstring& str);
+/* standard curves*/
+#include "cryptopp/nbtheory.h"
+#include "cryptopp/eccrypto.h"
+using CryptoPP::ECP;
+using CryptoPP::ECIES;
+using CryptoPP::ECDSA;
+using CryptoPP::DL_GroupParameters_EC;
+using CryptoPP::DL_GroupPrecomputation;
+using CryptoPP::DL_FixedBasePrecomputation;
 
-/* convert integer to string */
-string integer_to_string(const CryptoPP::Integer& t);
+/* Curve */
+#include "cryptopp/asn.h"
+#include "cryptopp/oids.h" 
+namespace ASN1 = CryptoPP::ASN1;
+using CryptoPP::OID;
 
-/* convert integer to wstring */
-wstring integer_to_wstring(const CryptoPP::Integer& t);
+/* Set _setmode()*/
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#else
+#endif
 
-int main(int argc, char* argv[])
+void LoadPrivateKey( const string& filename, CryptoPP::ECDSA<ECP, SHA256>::PrivateKey& key );
+void LoadPublicKey( const string& filename, CryptoPP::ECDSA<ECP, SHA256>::PublicKey& key );
+wstring s2ws(const std::string &str);
+string ws2s(const std::wstring &str);
+bool SignMessage( const CryptoPP::ECDSA<ECP, SHA256>::PrivateKey& key, const string& message, string& signature );
+bool VerifyMessage( const CryptoPP::ECDSA<ECP, SHA256>::PublicKey& key, const string& message, const string& signature );
+
+string dataa;            
+string signature;
+CryptoPP::ECDSA<ECP, SHA256>::PrivateKey privateKey;
+CryptoPP::ECDSA<ECP, SHA256>::PublicKey publicKey;
+using namespace std;
+
+
+int main()
 {
-    // setup mode hệ điều hành
     #ifdef __linux__
-	setlocale(LC_ALL,"");
-	#elif _WIN32
+	setlocale(LC_ALL, "");
+    #elif _WIN32
 	_setmode(_fileno(stdin), _O_U16TEXT);
- 	_setmode(_fileno(stdout), _O_U16TEXT);
-	#else
-	#endif
+	_setmode(_fileno(stdout), _O_U16TEXT);
+    #else
+    #endif
+    ECDSA<ECP, SHA256>::PrivateKey privateKey;
+    ECDSA<ECP, SHA256>::PublicKey publicKey;
 
-    AutoSeededRandomPool prng;
-    Integer p, q, g;
-    PrimeAndGenerator pg;
-    pg.Generate(1, prng, 512, 511);
-    p = pg.Prime();
-    q = pg.SubPrime();
-    g = pg.Generator();
-    // cout << "p: " << p << endl;
-    // cout << "q: " << q << endl;
-    // cout << "g: " << g << endl;
+    AutoSeededRandomPool prng, rrng;
 
-    // ModularArithmetic ma(p); 
-    // Integer x("5738592352534556747104289660421262539500678100766128832735.");
-    // Integer y("8563265737285361724904289660421262539500678100766128765412.");
-    // Integer x1(ma.Divide(1, x));
+    privateKey.Initialize(prng, CryptoPP::ASN1::secp256k1());
 
-    // cout << "x+y mod p: " << ma.Add(x, y) << endl;
-    // cout << "x-y mod p: " << ma.Subtract(x, y) << endl;
-    // cout << "x*y mod p: " << ma.Multiply(x, y) << endl;
-    // cout << "x/y mod p: " << ma.Divide(x, y) << endl;
-    // cout << "x%y mod p: " << ma.Reduce(x, y) << endl;
-    // cout << "x^y mod p: " << ma.Exponentiate(x, y) << endl;
-    // cout << "x1=x^-1 mod p: " << x1 << endl;
-    // cout << "x*x1 mod p: " << ma.Multiply(x, x1) << endl;
+    privateKey.MakePublicKey(publicKey);
 
-    ModularArithmetic ma(p); // mod p
-    Integer x("1958569211444031162104289660421262539500678100766128832735.");
-    Integer y("2858569211444031162104289660421262539500678100766128765412.");
+    string signature;
 
-    // cout << "a = " << a << endl;
-    // cout << "b = " << b << endl;
-    // cout << "c = " << c << endl;
-    // cout << "d = " << d << endl;
-    // cout << "e = " << e << endl;
-    // cout << "x = " << x << endl;
-    // string csrip = "Code hỗ trợ tiếng việt";
-    // wcout << string_to_wstring(csrip) << endl;
-    // wcout << "prime number p = " << integer_to_wstring(p) << endl;
-    // wcout << "prime number q = " << integer_to_wstring(q) << endl;
-    // wcout << "generator number g = " << integer_to_wstring(g) << endl;
+    signature.erase();
 
-    // cout << "x+y mod p: " << ma.Add(x, y) << endl;
-    // cout << "x-y mod p: " << ma.Subtract(x, y) << endl;
-    // cout << "x*y mod p: " << ma.Multiply(x, y) << endl;
-    // cout << "x/y mod p: " << ma.Divide(x, y) << endl;
-    // cout << "x%y mod p: " << ma.Reduce(x, y) << endl;
-    // cout << "x^y mod p: " << ma.Exponentiate(x, y) << endl;
-    // Integer x1(ma.Divide(1, x));
-    // cout << "x1=x^-1 mod p: " <<ma.Divide(1, x) << endl;
-    // cout << "x*x1 mod p: " << ma.Multiply(x, x1) << endl;
+    string message = "Do or do not. There is no try.";
 
-    // wcout <<"x*y mod p: " <<  integer_to_wstring(a_times_b_mod_c(x,y,p)) << endl;
-    // wcout <<"x/y mod p: " <<  integer_to_wstring(a_exp_b_mod_c(x,y,p)) << endl;
+    StringSource(message, true,
+        new SignerFilter(rrng,
+        ECDSA<ECP, SHA256>::Signer(privateKey),
+        new StringSink(signature)));
 
-    // Convert wstring to integer
-    // wstring ss; 
-    // string encode;
-    // wcout << "Input message: ";
-    // getline(wcin,ss);
-    // encode.clear();
-    // StringSource(wstring_to_string(ss),true,new HexEncoder(new StringSink(encode)));
-    // encode +="H";
-    // wcout<< "string to hex: " << string_to_wstring(encode) << endl;
-    // Integer h(encode.data());
-    // wcout << "wstring to number h: " << integer_to_wstring(h) << endl;
+    try
+    {
+        StringSource(message + signature, true,
+            new SignatureVerificationFilter(
+            ECDSA<ECP, SHA256>::Verifier(publicKey), NULL,
+            SignatureVerificationFilter::THROW_EXCEPTION
+            ) // SignatureVerificationFilter   
+            ); // StringSource
+            wcout << "OKE";
+    }
+    catch (CryptoPP::Exception& e)
+    {   
+        wcout << "NOT OKE !!!";
+        std::cerr << "\n\nERROR: " << e.what() << std::endl;
+    }
+  
+    // int ia;
+    // wcout << "Action: 1.Sigh 2.Verify\n";
+    // wcin >> ia;
 
-    // Convert integer to wstring
-    wstring ss; 
-    string encode;
-    ss.clear();
-    string decode;
-    wcout << "Input integer: ";
-    getline(wcin,ss);
-    decode.clear();
-    Integer h(wstring_to_string(ss).data());
-    encode = integer_to_string(h);
-    StringSource(encode,true,new HexDecoder(new StringSink(decode)));
-    wcout << string_to_wstring(decode);
+    // wstring temp, temp1;
+    // string fileprivate, filepublic;
+    // wcout << "Filename private key: ";
+    // wcin >> temp;
+    // fileprivate = ws2s(temp);
+    // wcout << "File name public key: ";
+    // wcin >> temp1;
+    // filepublic = ws2s(temp1);
+    // LoadPrivateKey(fileprivate.c_str(), privateKey);
+    // LoadPublicKey(filepublic.c_str(), publicKey);
+
+    // switch (ia)
+    // {
+    //     case 1:
+    //     {
+    //         wstring wfilename;
+    //         string filename;
+    //         bool result = false;
+
+    //         wcout << "Filename need sigh: ";
+    //         wcin >>  wfilename;
+    //         filename = ws2s(wfilename);
+    //         FileSource fpl(filename.c_str(), true, new StringSink(dataa));
+    //         result = SignMessage( privateKey, dataa, signature );
+    //         assert( true == result );
+
+    //         wcout <<"File name save signature: ";
+    //         wcin >>  wfilename;
+    //         filename = ws2s(wfilename);
+    //         StringSource s(signature, true, new FileSink(filename.c_str()));
+    //     }break;
+
+    //     default:
+    //     {
+    //         wstring wfilename;
+    //         string filename;
+    //         bool result = false;
+
+    //         wcout << "Filename need verify: ";
+    //         wcin >>  wfilename;
+    //         filename = ws2s(wfilename);
+    //         FileSource fpl(filename.c_str(), true, new StringSink(dataa));
+    //         wcout << "filename of signature: ";
+    //         wcin >> wfilename;
+    //         filename = ws2s(wfilename);
+    //         FileSource fpll(filename.c_str(), true, new StringSink(signature));
+
+    //         result = VerifyMessage( publicKey, dataa, signature );
+    //         // assert( result == true );
+            
+    //         if(result) wcout << "Great";
+    //         else wcout << "Something wrong";
+    //     }break;
+    // }
 
 }
-
-//Function definition
 /* convert string to wstring */
-wstring string_to_wstring (const std::string& str)
+wstring s2ws(const std::string &str)
 {
-    wstring_convert<codecvt_utf8<wchar_t> > towstring;
-    return towstring.from_bytes(str);
+	wstring_convert<codecvt_utf8<wchar_t>> towstring;
+	return towstring.from_bytes(str);
 }
 
 /* convert wstring to string */
-string wstring_to_string (const std::wstring& str)
+string ws2s(const std::wstring &str)
 {
-    wstring_convert<codecvt_utf8<wchar_t> > tostring;
-    return tostring.to_bytes(str);
+	wstring_convert<codecvt_utf8<wchar_t>> tostring;
+	return tostring.to_bytes(str);
 }
 
-/* convert integer to string */
-string integer_to_string(const CryptoPP::Integer& t)
-{
-    std::ostringstream oss;
-    oss.str("");
-    oss.clear();
-    oss << t;
-    std::string encoded(oss.str());
-    return encoded;
+void LoadPrivateKey( const string& filename, ECDSA<ECP, SHA256>::PrivateKey& key )
+{   
+    key.Load( FileSource( filename.c_str(), true).Ref() );
 }
 
-/* convert integer to wstring */
-wstring integer_to_wstring(const CryptoPP::Integer& t)
+void LoadPublicKey( const string& filename, ECDSA<ECP, SHA256>::PublicKey& key )
 {
-    std::ostringstream oss;
-    oss.str("");
-    oss.clear();
-    oss << t;
-    std::string encoded(oss.str());
-    std::wstring_convert<codecvt_utf8<wchar_t>> towstring;
-    return towstring.from_bytes(encoded);
+    key.Load( FileSource( filename.c_str(), true).Ref() );
+}
+
+bool SignMessage( const ECDSA<ECP, SHA256>::PrivateKey& key, const string& message, string& signature )
+{
+    AutoSeededRandomPool prng;
+    
+    signature.erase();    
+
+    
+    StringSource( message, true,
+        new SignerFilter( prng,
+            ECDSA<ECP,SHA256>::Signer(key),
+            new StringSink( signature )
+        ) // SignerFilter
+    ); // StringSource
+    
+    return !signature.empty();
+}
+
+bool VerifyMessage( const ECDSA<ECP, SHA256>::PublicKey& key, const string& message, const string& signature )
+{
+    bool result = true;
+
+    // StringSource( signature+message, true,
+    //     new SignatureVerificationFilter(
+    //         ECDSA<ECP,SHA256>::Verifier(key),
+    //         new ArraySink( CryptoPP::byte* &result, sizeof(result) )
+    //     ) // SignatureVerificationFilter
+    // );
+    StringSource( signature+message, true,
+    new SignatureVerificationFilter(
+            ECDSA<ECP,SHA256>::Verifier(key),
+            NULL
+        )
+    );
+    return result;
 }
