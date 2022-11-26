@@ -121,15 +121,12 @@ int main()
 
     /* Set key auto for demo */
     AutoSeededRandomPool prng;
-    // InvertibleRSAFunction params;
-    // params.GenerateRandomWithKeySize(prng,3072);
     RSA::PrivateKey rsaPrivate;
     RSA::PublicKey rsaPublic;
-    // Integer SK=rsaPrivate.GetPrivateExponent();
-    // Integer PK=rsaPublic.GetPublicExponent();
     string fileprivate,filepublic;
     wstring temp, temp1;
 
+    // Encryption, Decryption
     int ia, is;
     wcout << "Action: 1.Encrypt 2.Decrypt\n";
     wcin >> ia;
@@ -143,7 +140,7 @@ int main()
     DecodePrivateKey(fileprivate.c_str(), rsaPrivate);
     DecodePublicKey(filepublic.c_str(), rsaPublic);
 
-
+    // Input plain txt: Screen, File
     wcout << "Source input: 1.Screen 2.File\n";
     wcin >> is;
     switch (ia)
@@ -158,9 +155,9 @@ int main()
         new PK_EncryptorFilter(prng, e,
               new Base64Encoder(
                  new StringSink(cipher)
-              ) // Base64Encode
-            ) // PK_EncryptorFilter
-        ); // StringSource
+              )
+            )
+        );
 
         wcout << "cipher: " << string_to_wstring(cipher) << endl;
         // Save to file
@@ -180,8 +177,8 @@ int main()
         StringSource ss2(decoded, true,
         new PK_DecryptorFilter(prng, d,
             new StringSink(recorvered)
-            ) // PK_DecryptorFilter
-        ); // StringSource
+            )
+        );
 
         wcout << "recorver: " << string_to_wstring(recorvered) << endl;
         // Save to file
@@ -240,12 +237,11 @@ string GetInput(int is)
     case 1:
     {
         wcout << "Please input: ";
-        fflush(stdin);
-        getline(wcin,winput);   // getline lần 1
         wcin.ignore();
+        getline(wcin,winput);
         input = wstring_to_string(winput);
         return input;
-    }
+    }break;
     
     default:
     {

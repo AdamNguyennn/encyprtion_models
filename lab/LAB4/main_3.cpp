@@ -1,8 +1,66 @@
+/* C++ library */
 #include<iostream>
 using std::wcin;
 using std::wcout;
 using std::cerr;
 using std::endl;
+
+#include <sstream>
+#include <string>
+using std::string;
+using std::wstring;
+
+/* CryptoPP library */
+#include "cryptopp/integer.h"
+using CryptoPP::Integer;
+
+#include "cryptopp/nbtheory.h"
+using CryptoPP::ModularSquareRoot;
+using CryptoPP::PrimeAndGenerator;
+
+#include "cryptopp/modarith.h"
+using CryptoPP::ModularArithmetic;
+
+#include "cryptopp/osrng.h"
+using CryptoPP::AutoSeededRandomPool;
+// using CryptoPP::byte;
+
+#include "cryptopp/filters.h"
+using CryptoPP::StringSink;
+using CryptoPP::StringSource;
+using CryptoPP::BufferedTransformation;
+using CryptoPP::PK_EncryptorFilter;
+using CryptoPP::PK_DecryptorFilter;
+
+#include <cryptopp/files.h>
+using CryptoPP::FileSource;
+using CryptoPP::FileSink;
+
+#include "cryptopp/hex.h"
+using CryptoPP::HexEncoder;
+using CryptoPP::HexDecoder;
+
+#include "cryptopp/base64.h"
+using CryptoPP::Base64Encoder;
+using CryptoPP::Base64Decoder;
+
+//Genererate keys
+#include "cryptopp/cryptlib.h"
+using CryptoPP::PrivateKey;
+using CryptoPP::PublicKey;
+using CryptoPP::Exception;
+using CryptoPP::DecodingResult;
+
+//Reading key input from file
+#include <cryptopp/queue.h>
+using CryptoPP::ByteQueue;
+
+// RSA cipher
+#include "cryptopp/rsa.h"
+using CryptoPP::RSA;
+using CryptoPP::RSAES_OAEP_SHA_Encryptor;
+using CryptoPP::RSAES_OAEP_SHA_Decryptor;
+using CryptoPP::InvertibleRSAFunction;
 
 /* Set location */ 
 #include <locale>
@@ -17,37 +75,6 @@ using std::codecvt_utf8;
 #else
 #endif
 
-
-#include <string>
-using std::string;
-using std::wstring;
-
-#include <sstream>
-
-#include "cryptopp/integer.h"
-using CryptoPP::Integer;
-
-#include "cryptopp/nbtheory.h"
-using CryptoPP::ModularSquareRoot;
-using CryptoPP::PrimeAndGenerator;
-
-#include "cryptopp/modarith.h"
-using CryptoPP::ModularArithmetic;
-
-#include "cryptopp/osrng.h"
-using CryptoPP::AutoSeededRandomPool;
-using CryptoPP::byte;
-
-#include "cryptopp/filters.h"
-using CryptoPP::StringSink;
-using CryptoPP::StringSource;
-using CryptoPP::StreamTransformationFilter;
-using CryptoPP::Redirector; // string to bytes
-
-#include "cryptopp/hex.h"
-using CryptoPP::HexEncoder;
-using CryptoPP::HexDecoder;
-
 //Function definition
 /* convert string to wstring */
 wstring string_to_wstring (const std::string& str);
@@ -61,7 +88,27 @@ string integer_to_string(const CryptoPP::Integer& t);
 /* convert integer to wstring */
 wstring integer_to_wstring(const CryptoPP::Integer& t);
 
-int main(int argc, char* argv[])
+/* Get input  */
+string GetInput(int is);
+
+/* Save to some file */
+void savefile (string input)
+{
+	
+	wcout<<"filename: ";        // Get filename
+	string filename;
+	wstring wf;
+    wcin>> wf;
+	filename = wstring_to_string(wf);
+	StringSource s(input, true, new FileSink(filename.c_str()));    // save to file
+}
+
+/* Decode key from file */
+void DecodePrivateKey(const string& filename, RSA::PrivateKey& key);
+void DecodePublicKey(const string& filename, RSA::PublicKey& key);
+void Decode(const string& filename, BufferedTransformation& bt);
+
+int main()
 {
     // setup mode hệ điều hành
     #ifdef __linux__
@@ -72,85 +119,75 @@ int main(int argc, char* argv[])
 	#else
 	#endif
 
+    /* Set key auto for demo */
     AutoSeededRandomPool prng;
-    Integer p, q, g;
-    PrimeAndGenerator pg;
-    pg.Generate(1, prng, 512, 511);
-    p = pg.Prime();
-    q = pg.SubPrime();
-    g = pg.Generator();
-    // cout << "p: " << p << endl;
-    // cout << "q: " << q << endl;
-    // cout << "g: " << g << endl;
+    RSA::PrivateKey rsaPrivate;
+    RSA::PublicKey rsaPublic;
+    string fileprivate,filepublic;
+    wstring temp, temp1;
 
-    // ModularArithmetic ma(p); 
-    // Integer x("5738592352534556747104289660421262539500678100766128832735.");
-    // Integer y("8563265737285361724904289660421262539500678100766128765412.");
-    // Integer x1(ma.Divide(1, x));
+    // Encryption, Decryption
+    int ia, is;
+    wcout << "Action: 1.Encrypt 2.Decrypt\n";
+    wcin >> ia;
 
-    // cout << "x+y mod p: " << ma.Add(x, y) << endl;
-    // cout << "x-y mod p: " << ma.Subtract(x, y) << endl;
-    // cout << "x*y mod p: " << ma.Multiply(x, y) << endl;
-    // cout << "x/y mod p: " << ma.Divide(x, y) << endl;
-    // cout << "x%y mod p: " << ma.Reduce(x, y) << endl;
-    // cout << "x^y mod p: " << ma.Exponentiate(x, y) << endl;
-    // cout << "x1=x^-1 mod p: " << x1 << endl;
-    // cout << "x*x1 mod p: " << ma.Multiply(x, x1) << endl;
+    wcout << "Filename private key: ";
+    wcin >> temp;
+    fileprivate = wstring_to_string(temp);
+    wcout << "File name public key: ";
+    wcin >> temp1;
+    filepublic = wstring_to_string(temp1);
+    DecodePrivateKey(fileprivate.c_str(), rsaPrivate);
+    DecodePublicKey(filepublic.c_str(), rsaPublic);
 
-    ModularArithmetic ma(p); // mod p
-    Integer x("1958569211444031162104289660421262539500678100766128832735.");
-    Integer y("2858569211444031162104289660421262539500678100766128765412.");
+    // Input plain txt: Screen, File
+    wcout << "Source input: 1.Screen 2.File\n";
+    wcin >> is;
+    switch (ia)
+    {
+    case 1:
+    {
+        string plain, cipher;
+        plain = GetInput(is);
 
-    // cout << "a = " << a << endl;
-    // cout << "b = " << b << endl;
-    // cout << "c = " << c << endl;
-    // cout << "d = " << d << endl;
-    // cout << "e = " << e << endl;
-    // cout << "x = " << x << endl;
-    // string csrip = "Code hỗ trợ tiếng việt";
-    // wcout << string_to_wstring(csrip) << endl;
-    // wcout << "prime number p = " << integer_to_wstring(p) << endl;
-    // wcout << "prime number q = " << integer_to_wstring(q) << endl;
-    // wcout << "generator number g = " << integer_to_wstring(g) << endl;
+        RSAES_OAEP_SHA_Encryptor e(rsaPublic);
+        StringSource ss1(plain, true,
+        new PK_EncryptorFilter(prng, e,
+              new Base64Encoder(
+                 new StringSink(cipher)
+              )
+            )
+        );
 
-    // cout << "x+y mod p: " << ma.Add(x, y) << endl;
-    // cout << "x-y mod p: " << ma.Subtract(x, y) << endl;
-    // cout << "x*y mod p: " << ma.Multiply(x, y) << endl;
-    // cout << "x/y mod p: " << ma.Divide(x, y) << endl;
-    // cout << "x%y mod p: " << ma.Reduce(x, y) << endl;
-    // cout << "x^y mod p: " << ma.Exponentiate(x, y) << endl;
-    // Integer x1(ma.Divide(1, x));
-    // cout << "x1=x^-1 mod p: " <<ma.Divide(1, x) << endl;
-    // cout << "x*x1 mod p: " << ma.Multiply(x, x1) << endl;
+        wcout << "cipher: " << string_to_wstring(cipher) << endl;
+        // Save to file
+		wcout << "Save to file? 1.Yes 2.No\n";
+		int is;
+		wcin>>is;
+		if(is==1) savefile(cipher);
+    }break;
+    
+    default:
+    {
+        string cipher, decoded, recorvered;
+        cipher = GetInput(is);
+        StringSource(cipher,true,new Base64Decoder(new StringSink(decoded)));
 
-    // wcout <<"x*y mod p: " <<  integer_to_wstring(a_times_b_mod_c(x,y,p)) << endl;
-    // wcout <<"x/y mod p: " <<  integer_to_wstring(a_exp_b_mod_c(x,y,p)) << endl;
+        RSAES_OAEP_SHA_Decryptor d(rsaPrivate);
+        StringSource ss2(decoded, true,
+        new PK_DecryptorFilter(prng, d,
+            new StringSink(recorvered)
+            )
+        );
 
-    // Convert wstring to integer
-    // wstring ss; 
-    // string encode;
-    // wcout << "Input message: ";
-    // getline(wcin,ss);
-    // encode.clear();
-    // StringSource(wstring_to_string(ss),true,new HexEncoder(new StringSink(encode)));
-    // encode +="H";
-    // wcout<< "string to hex: " << string_to_wstring(encode) << endl;
-    // Integer h(encode.data());
-    // wcout << "wstring to number h: " << integer_to_wstring(h) << endl;
-
-    // Convert integer to wstring
-    wstring ss; 
-    string encode;
-    ss.clear();
-    string decode;
-    wcout << "Input integer: ";
-    getline(wcin,ss);
-    decode.clear();
-    Integer h(wstring_to_string(ss).data());
-    encode = integer_to_string(h);
-    StringSource(encode,true,new HexDecoder(new StringSink(decode)));
-    wcout << string_to_wstring(decode);
-
+        wcout << "recorver: " << string_to_wstring(recorvered) << endl;
+        // Save to file
+		wcout << "Save to file? 1.Yes 2.No\n";
+		int is;
+		wcin>>is;
+		if(is==1) savefile(recorvered);
+    }break;
+    }
 }
 
 //Function definition
@@ -189,4 +226,54 @@ wstring integer_to_wstring(const CryptoPP::Integer& t)
     std::string encoded(oss.str());
     std::wstring_convert<codecvt_utf8<wchar_t>> towstring;
     return towstring.from_bytes(encoded);
+}
+
+string GetInput(int is)
+{
+    wstring winput;
+    string input;
+    switch (is)
+    {
+    case 1:
+    {
+        wcout << "Please input: ";
+        wcin.ignore();
+        getline(wcin,winput);
+        input = wstring_to_string(winput);
+        return input;
+    }break;
+    
+    default:
+    {
+        wcout << "Please filename: ";
+        wcin >> winput;
+        string filename = wstring_to_string(winput);
+        FileSource file(filename.c_str(), true, new StringSink(input));
+        return input;
+    }
+    }
+}
+
+void DecodePrivateKey(const string& filename, RSA::PrivateKey& key)
+{
+	ByteQueue queue;
+
+	Decode(filename, queue);
+	key.BERDecodePrivateKey(queue, false, queue.MaxRetrievable());
+}
+
+void DecodePublicKey(const string& filename, RSA::PublicKey& key)
+{
+	ByteQueue queue;
+
+	Decode(filename, queue);
+	key.BERDecodePublicKey(queue, false, queue.MaxRetrievable());
+}
+
+void Decode(const string& filename, BufferedTransformation& bt)
+{
+	FileSource file(filename.c_str(), true);
+
+	file.TransferTo(bt);
+	bt.MessageEnd();
 }

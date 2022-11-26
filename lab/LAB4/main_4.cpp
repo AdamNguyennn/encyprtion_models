@@ -1,206 +1,208 @@
-//  Defines the entry point for the console application
-/*ECC parameters p,a,b, P (or G), n, h where p=h.n*/
-
-/* Source, Sink */
-#include "cryptopp/filters.h"
-
-#include <ctime>
-#include <iostream>
-#include <string>
+#include<iostream>
 using namespace std;
+using std::wcin;
+using std::wcout;
+using std::cerr;
+using std::endl;
+#include <string>
+using std::string;
+using std::wstring;
+#include <locale>
+using std::wstring_convert;
+#include <codecvt>
+using std::codecvt_utf8;
+#include <assert.h>
+
+/* Filters */
+#include "cryptopp/filters.h"
+using CryptoPP::StringSource;
+using CryptoPP::StringSink;
+using CryptoPP::ArraySink;
+using CryptoPP::SignerFilter;
+using CryptoPP::SignatureVerificationFilter;
+// using CryptoPP::byte;
+
+/* File */
+#include "cryptopp/files.h"
+using CryptoPP::FileSource;
+using CryptoPP::FileSink;
+
+
+#include "cryptopp/integer.h"
+using CryptoPP::Integer;
 
 #include "cryptopp/nbtheory.h"
 using CryptoPP::ModularSquareRoot;
 using CryptoPP::PrimeAndGenerator;
 
-/* Randomly generator*/
+#include "cryptopp/modarith.h"
+using CryptoPP::ModularArithmetic;
+
 #include "cryptopp/osrng.h"
 using CryptoPP::AutoSeededRandomPool;
 
-/* Integer arithmatics*/
-#include <cryptopp/integer.h>
-using CryptoPP::Integer;
-#include <cryptopp/nbtheory.h>
-using CryptoPP::ModularSquareRoot;
 
-#include <cryptopp/ecp.h>
-#include <cryptopp/eccrypto.h>
-using CryptoPP::ECP;    // Prime field p
+#include "cryptopp/sha.h"
+using CryptoPP::SHA256;
+
+
+/* standard curves*/
+#include "cryptopp/nbtheory.h"
+#include "cryptopp/eccrypto.h"
+using CryptoPP::ECP;
 using CryptoPP::ECIES;
-using CryptoPP::ECPPoint;
+using CryptoPP::ECDSA;
 using CryptoPP::DL_GroupParameters_EC;
 using CryptoPP::DL_GroupPrecomputation;
 using CryptoPP::DL_FixedBasePrecomputation;
 
-#include <cryptopp/pubkey.h>
-using CryptoPP::PublicKey;
-using CryptoPP::PrivateKey;
-
-/* standard curves*/
-#include <cryptopp/asn.h>
-#include <cryptopp/oids.h> // 
+/* Curve */
+#include "cryptopp/asn.h"
+#include "cryptopp/oids.h" 
 namespace ASN1 = CryptoPP::ASN1;
 using CryptoPP::OID;
-// hex convert
-#include <cryptopp/hex.h>
-using CryptoPP::HexEncoder;
-using CryptoPP::HexDecoder;
-// File operation
-#include <cryptopp/files.h>
-#include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
-#include <string>
-using std::string;
+/* Set _setmode()*/
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#else
+#endif
 
-#include <stdexcept>
-using std::runtime_error;
+void LoadPrivateKey( const string& filename, CryptoPP::ECDSA<ECP, SHA256>::PrivateKey& key );
+void LoadPublicKey( const string& filename, CryptoPP::ECDSA<ECP, SHA256>::PublicKey& key );
+wstring s2ws(const std::string &str);
+string ws2s(const std::wstring &str);
+bool SignMessage( const CryptoPP::ECDSA<ECP, SHA256>::PrivateKey& key, const string& message, string& signature );
+bool VerifyMessage( const CryptoPP::ECDSA<ECP, SHA256>::PublicKey& key, const string& message, const string& signature );
 
-#include <cstdlib>
-using std::exit;
+string dataa;            
+string signature;
+CryptoPP::ECDSA<ECP, SHA256>::PrivateKey privateKey;
+CryptoPP::ECDSA<ECP, SHA256>::PublicKey publicKey;
+using namespace std;
 
-#include "cryptopp/osrng.h"
-using CryptoPP::AutoSeededRandomPool;
-using CryptoPP::AutoSeededX917RNG;
 
-#include "cryptopp/aes.h"
-using CryptoPP::AES;
-
-#include "cryptopp/eccrypto.h"
-using CryptoPP::ECP;
-using CryptoPP::ECDH;
-
-#include "cryptopp/secblock.h"
-using CryptoPP::SecByteBlock;
-
-#include "cryptopp/oids.h"
-using CryptoPP::OID;
-
-// ASN1 is a namespace, not an object
-#include "cryptopp/asn.h"
-using namespace CryptoPP::ASN1;
-
-#include "cryptopp/integer.h"
-using CryptoPP::Integer;
-
-/* convert integer to string */
-string integer_to_string(const CryptoPP::Integer& t);
-
-int main(int argc, char* argv[])
+int main()
 {
-    AutoSeededRandomPool rng;
-// Contruct standrad curve from OID
-    /* ECC curve */
-    CryptoPP::OID oid= ASN1::secp256r1();
-    /* Create a curve for ECDH*/ 
-    CryptoPP::ECDH<ECP>::Domain ecdh(oid);
-    /* Create key pairs*/
-    CryptoPP::SecByteBlock privKey_1(ecdh.PrivateKeyLength()), pubKey_1(ecdh.PublicKeyLength());
-    CryptoPP::SecByteBlock privKey_2(ecdh.PrivateKeyLength()), pubKey_2(ecdh.PublicKeyLength());
-    // ecdh.GenerateKeyPair(rng, privKey, pubKey);
-    //hex incode
-    CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(cout));
-    cout << "Private key 1: ";
-    encoder.Put(privKey_1, privKey_1.size());
-    cout << endl;
-    cout << "Public key 1: ";
-    encoder.Put(pubKey_1, pubKey_1.size());
-    cout << endl;
-    cout << "Private key 2: ";
-    encoder.Put(privKey_2, privKey_2.size());
-    cout << endl;
-    cout << "Public key 2: ";
-    encoder.Put(pubKey_2, pubKey_2.size());
-    cout << endl;
-    PrimeAndGenerator pg;
-    pg.Generate(1, rng, 512, 511);
-    cout<< "Prime: " << pg.Prime();
-    cout << endl; 
-        // // Curve 256
-        // CryptoPP::DL_GroupParameters_EC<ECP> curve384;
-        // curve384.Initialize(oid);
-        // /* Get Curve parameters p, a,b, G, n, h*/
-        // ECP::Point G=curve384.GetSubgroupGenerator(); // Get Base point G
-        // cout << "Base point G(x,y)" << endl;
-        // cout << "Gx=" <<G.x << endl;
-        // cout << "Gy=" << G.y << endl;
-        // CryptoPP::Integer n=curve384.GetSubgroupOrder(); // Get order n
-        // cout << "Number of curve point" << endl;
-        // cout << "n=" << n << endl;
-        // CryptoPP::Integer h=curve384.GetCofactor();  // Get Cofactor h    
-        // cout << "Cofactor h=" << h << endl;
-        // CryptoPP::Integer a=curve384.GetCurve().GetA(); //Get Coefficient a 
-        // cout << "Coefficient a=" << a << endl; 
-        // CryptoPP::Integer b=curve384.GetCurve().GetB(); //Get Coefficient b 
-        // cout << "Coefficient b=" << b << endl;
-        // /* Curve operations*/
-        // /* Compute on subgroup <G> */
-        // ECP::Point  Q=curve384.GetCurve().Double(G);
-        // cout << "Curve point Q=G+G" << endl;
-        // cout << "Qx=" << Q.x << endl;
-        // cout << "Qy=" << Q.y << endl;
-        // // Scalar Multiply
-        // CryptoPP::Integer k("871.");
-        // ECP::Point U=curve384.GetCurve().Multiply(k,G);
-        // cout << "Curve point U = 871*G" << endl;
-        // cout << "Ux=" << U.x << endl;
-        // cout << "Uy=" << U.y << endl;
-        // // Point Addition
-        // ECP::Point V=curve384.GetCurve().Add(Q,U);
-        // cout << "Curve point V = Q+U" << endl;
-        // cout << "Vx=" << U.x << endl;
-        // cout << "Vy=" << U.y << endl;
-        //  // Point invertion
-        // ECP::Point X=curve384.GetCurve().Inverse(G);
-        // cout << "Curve point X = G^-1" << endl;
-        // cout << "Xx=" << X.x << endl;
-        // cout << "Xy=" << X.y << endl;
-        // // Multiple
-        // ECP::Point H=curve384.GetCurve().ScalarMultiply(G,k);
-        // cout << "Curve point H = 871*G" << endl;
-        // cout << "Hx=" << H.x << endl;
-        // cout << "Hy=" << H.y << endl;
+    #ifdef __linux__
+	setlocale(LC_ALL, "");
+    #elif _WIN32
+	_setmode(_fileno(stdin), _O_U16TEXT);
+	_setmode(_fileno(stdout), _O_U16TEXT);
+    #else
+    #endif
+  
+    int ia;
+    wcout << "Action: 1.Sigh 2.Verify\n";
+    wcin >> ia;
 
-    PrimeAndGenerator d1, d2;
-    d1.Generate(1, rng, 512, 511);
-    d2.Generate(1, rng, 512, 511);
-    cout<< "Prime_1: " << d1.Prime();
-    cout << endl;
-    cout<< "Prime_2: " << d2.Prime();
-    cout << endl;
-    // Curve 256
-    CryptoPP::DL_GroupParameters_EC<ECP> curve384;
-    curve384.Initialize(oid);
-    /* Get Curve parameters p, a,b, G, n, h*/
-    ECP::Point G=curve384.GetSubgroupGenerator(); // Get Base point G
-    cout << "Base point G(x,y)" << endl;
-    cout << "Gx=" <<G.x << endl;
-    cout << "Gy=" << G.y << endl;
-    CryptoPP::Integer k1(d1);
-    ECP::Point Q1=curve384.GetCurve().Multiply(k1,G);
-    cout << "Q1 = d1*G" << endl;
-    cout << "Q1_x=" << U.x << endl;
-    cout << "Q1_y=" << U.y << endl;
-    CryptoPP::Integer k2(d2);
-    ECP::Point Q2=curve384.GetCurve().Multiply(k2,G);
-    cout << "Q2 = d2*G" << endl;
-    cout << "Q2_x=" << U.x << endl;
-    cout << "Q2_y=" << U.y << endl;
+    wstring temp, temp1;
+    string fileprivate, filepublic;
+    wcout << "Filename private key: ";
+    wcin >> temp;
+    fileprivate = ws2s(temp);
+    wcout << "File name public key: ";
+    wcin >> temp1;
+    filepublic = ws2s(temp1);
+    LoadPrivateKey(fileprivate.c_str(), privateKey);
+    LoadPublicKey(filepublic.c_str(), publicKey);
 
-    // OID CURVE = secp256r1();
-    // ECDH < ECP >::Domain dhA( CURVE ), dhB( CURVE );
-    // SecByteBlock privA(dhA.PrivateKeyLength()), pubA(dhA.PublicKeyLength());
-    // SecByteBlock privB(dhB.PrivateKeyLength()), pubB(dhB.PublicKeyLength());
-    // CryptoPP::Integer Qx_1(Q1.x);
-    // CryptoPP::Integer Qy_1(Q1.y);
-    // CryptoPP::Integer Qx_2(Q2.x);
-    // CryptoPP::Integer Qy_2(Q2.y);
+    switch (ia)
+    {
+        case 1:
+        {
+            wstring wfilename;
+            string filename;
+            bool result = false;
 
-    // dhA.GenerateKeyPair(rng, Qx_1, Qy_1);
-    // dhB.GenerateKeyPair(rng, Qx_2, Qy_2);
+            wcout << "Filename need sigh: ";
+            wcin >>  wfilename;
+            filename = ws2s(wfilename);
+            FileSource fpl(filename.c_str(), true, new StringSink(dataa));
+            result = SignMessage( privateKey, dataa, signature );
+            assert( true == result );
 
-    // if(dhA.AgreedValueLength() != dhB.AgreedValueLength())
-	// throw runtime_error("Shared secret size mismatch");
+            wcout <<"File name save signature: ";
+            wcin >>  wfilename;
+            filename = ws2s(wfilename);
+            StringSource s(signature, true, new FileSink(filename.c_str()));
+        }break;
+
+        default:
+        {
+            wstring wfilename;
+            string filename;
+            bool result = false;
+
+            wcout << "Filename need verify: ";
+            wcin >>  wfilename;
+            filename = ws2s(wfilename);
+            FileSource fpl(filename.c_str(), true, new StringSink(dataa));
+            wcout << "filename of signature: ";
+            wcin >> wfilename;
+            filename = ws2s(wfilename);
+            FileSource fpll(filename.c_str(), true, new StringSink(signature));
+
+            result = VerifyMessage( publicKey, dataa, signature );
+            // assert( result == true );
+            
+            if(result) wcout << "Great";
+            else wcout << "Something wrong";
+        }break;
+    }
+
+}
+/* convert string to wstring */
+wstring s2ws(const std::string &str)
+{
+	wstring_convert<codecvt_utf8<wchar_t>> towstring;
+	return towstring.from_bytes(str);
+}
+
+/* convert wstring to string */
+string ws2s(const std::wstring &str)
+{
+	wstring_convert<codecvt_utf8<wchar_t>> tostring;
+	return tostring.to_bytes(str);
+}
+
+void LoadPrivateKey( const string& filename, ECDSA<ECP, SHA256>::PrivateKey& key )
+{   
+    key.Load( FileSource( filename.c_str(), true).Ref() );
+}
+
+void LoadPublicKey( const string& filename, ECDSA<ECP, SHA256>::PublicKey& key )
+{
+    key.Load( FileSource( filename.c_str(), true).Ref() );
+}
+
+bool SignMessage( const ECDSA<ECP, SHA256>::PrivateKey& key, const string& message, string& signature )
+{
+    AutoSeededRandomPool prng;
+    
+    signature.erase();    
+
+    StringSource( message, true,
+        new SignerFilter( prng,
+            ECDSA<ECP,SHA256>::Signer(key),
+            new StringSink( signature )
+        ) // SignerFilter
+    ); // StringSource
+    
+    return !signature.empty();
+}
+
+bool VerifyMessage( const ECDSA<ECP, SHA256>::PublicKey& key, const string& message, const string& signature )
+{
+    bool result = false;
+
+    // StringSource( signature+message, true,
+    //     new SignatureVerificationFilter(
+    //         ECDSA<ECP,SHA256>::Verifier(key),
+    //         new ArraySink( CryptoPP::byte* &result, sizeof(result) )
+    //     ) // SignatureVerificationFilter
+    // );
+    StringSource( signature+message, true);
+    return result;
 }
